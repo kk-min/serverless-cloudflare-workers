@@ -47,9 +47,6 @@ module.exports = {
 			return false;
 		}
 
-		if (!zoneId) {
-			zoneId = "default"
-		}
 		const response = await cf.routes.getRoutes({ zoneId });
 		const { result } = response;
 
