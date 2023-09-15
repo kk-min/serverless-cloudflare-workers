@@ -16,20 +16,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-const path = require("path");
 const fs = require("fs");
 const webpack = require("../../utils/webpack");
 
 const generateCode = (serverless, functionObject) => {
-  let { script } = functionObject;
+	let { script } = functionObject;
 
-  const rootPath = webpack.getAssetPathPrefix(serverless, functionObject)
+	const rootPath = webpack.getAssetPathPrefix(serverless, functionObject)
+	script = `${rootPath}${script}`
 
-  if (path.extname(script) != ".js") {
-    script = `${rootPath}${script}.js`
-  }
-
-  return fs.readFileSync(script).toString();
+	return fs.readFileSync(script).toString();
 };
 
 /**
@@ -37,16 +33,16 @@ const generateCode = (serverless, functionObject) => {
  * @param {} functionObject 
  */
 const generateWASM = (functionObject) => {
-  let wasm = [];
-  if (functionObject && functionObject.resources && functionObject.resources.wasm) {
-    functionObject.resources.wasm.map((w) => {
-      wasm.push(w.file);
-    })
-  }
-  return wasm;
+	let wasm = [];
+	if (functionObject && functionObject.resources && functionObject.resources.wasm) {
+		functionObject.resources.wasm.map((w) => {
+			wasm.push(w.file);
+		})
+	}
+	return wasm;
 }
 
 module.exports = {
-  generateCode,
-  generateWASM
+	generateCode,
+	generateWASM
 };
