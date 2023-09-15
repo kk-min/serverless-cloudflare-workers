@@ -17,90 +17,90 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 module.exports = {
-  getFunctionObject(paramName) {
-    let funParam = paramName || this.options.function;
-    if (typeof funParam === "undefined") {
-      funParam = this.options.f;
-    }
-    if (funParam) {
-      return this.serverless.service.getFunction(funParam);
-    } else return null;
-  },
-  getFunctionObjectForSingleScript() {
-    const [functionName] = this.serverless.service.getAllFunctions();
-    return this.getFunctionObject(functionName);
-  },
-  parseWorkerResponse(serverlessConsole, apiResponse) {
-    let {
-      success: workerDeploySuccess,
-      result: workerResult,
-      errors: workerErrors
-    } = apiResponse;
+	getFunctionObject(paramName) {
+		let funParam = paramName || this.options.function;
+		if (typeof funParam === "undefined") {
+			funParam = this.options.f;
+		}
+		if (funParam) {
+			return this.serverless.service.getFunction(funParam);
+		} else return null;
+	},
+	getFunctionObjectForSingleScript() {
+		const [functionName] = this.serverless.service.getAllFunctions();
+		return this.getFunctionObject(functionName);
+	},
+	parseWorkerResponse(serverlessConsole, apiResponse) {
+		let {
+			success: workerDeploySuccess,
+			result: workerResult,
+			errors: workerErrors
+		} = apiResponse;
 
-    const { id, size } = workerResult || {};
+		const { id, size } = workerResult || {};
 
-    if (workerDeploySuccess) {
-      serverlessConsole.log(
-        `✅  Script Deployed. Name: ${id}, Size: ${(size / 1024).toFixed(2)}K`
-      );
-    } else {
-      serverlessConsole.log(`❌ Fatal Error, Script Not Deployed!`);
-      workerErrors.forEach(err => {
-        let { code, message } = err;
-        serverlessConsole.log(
-          `--> Error Code:${code}\n--> Error Message: "${message}"`
-        );
-      });
-    }
-    return { workerDeploySuccess, workerResult, workerErrors };
-  },
-  aggregateWorkerResponse(serverlessConsole, apiResponse) {
-    let status = [];
-    apiResponse.forEach(resp => {
-      status.push(this.parseWorkerResponse(serverlessConsole, resp));
-    });
-    return status;
-  },
+		if (workerDeploySuccess) {
+			serverlessConsole.log(
+				`✅  Script Deployed. Name: ${id}, Size: ${(size / 1024).toFixed(2)}K`
+			);
+		} else {
+			serverlessConsole.log(`❌ Fatal Error, Script Not Deployed!`);
+			workerErrors.forEach(err => {
+				let { code, message } = err;
+				serverlessConsole.log(
+					`--> Error Code:${code}\n--> Error Message: "${message}"`
+				);
+			});
+		}
+		return { workerDeploySuccess, workerResult, workerErrors };
+	},
+	aggregateWorkerResponse(serverlessConsole, apiResponse) {
+		let status = [];
+		apiResponse.forEach(resp => {
+			status.push(this.parseWorkerResponse(serverlessConsole, resp));
+		});
+		return status;
+	},
 
-  parseRoutesResponse(serverlessConsole, apiResponse) {
-    let status = [];
-    apiResponse.forEach(resp => {
-      let {
-        success: routeSuccess,
-        result: routeResult,
-        errors: routeErrors
-      } = resp;
+	parseRoutesResponse(serverlessConsole, apiResponse) {
+		let status = [];
+		apiResponse.forEach(resp => {
+			let {
+				success: routeSuccess,
+				result: routeResult,
+				errors: routeErrors
+			} = resp;
 
-      if (routeSuccess || !this.routeContainsFatalErrors(routeErrors)) {
-        serverlessConsole.log(`✅  Routes Deployed `);
-      } else {
-        serverlessConsole.log(`❌  Fatal Error, Routes Not Deployed!`);
-        routeErrors.forEach(err => {
-          let { code, message } = err;
-          serverlessConsole.log(
-            `--> Error Code:${code}\n--> Error Message: "${message}"`
-          );
-        });
-      }
+			//      if (routeSuccess || !this.routeContainsFatalErrors(routeErrors)) {
+			//        serverlessConsole.log(`✅  Routes Deployed `);
+			//      } else {
+			//        serverlessConsole.log(`❌  Fatal Error, Routes Not Deployed!`);
+			//        routeErrors.forEach(err => {
+			//          let { code, message } = err;
+			//          serverlessConsole.log(
+			//            `--> Error Code:${code}\n--> Error Message: "${message}"`
+			//          );
+			//        });
+			//      }
 
-      status.push({ routeSuccess, routeResult, routeErrors });
-    });
-    return status;
-  },
+			status.push({ routeSuccess, routeResult, routeErrors });
+		});
+		return status;
+	},
 
-  aggregateRoutesResponse(serverlessConsole, apiResponse) {
-    let status = [];
+	aggregateRoutesResponse(serverlessConsole, apiResponse) {
+		let status = [];
 
-    apiResponse.forEach(resp => {
-      status.push(this.parseRoutesResponse(serverlessConsole, resp));
-    });
+		apiResponse.forEach(resp => {
+			status.push(this.parseRoutesResponse(serverlessConsole, resp));
+		});
 
-    return status;
-  },
+		return status;
+	},
 
-  routeContainsFatalErrors(errors) {
-    // suppress 10020 duplicate routes error
-    // no need to show error when they are simply updating their script
-    return errors.some(e => e.code !== 10020);
-  }
+	routeContainsFatalErrors(errors) {
+		// suppress 10020 duplicate routes error
+		// no need to show error when they are simply updating their script
+		return errors.some(e => e.code !== 10020);
+	}
 };
